@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const Cards = require('./cards.js');
+const Player = require('./player')
 
 
 function playWar() {
@@ -7,43 +8,51 @@ function playWar() {
   let deck = Cards.getShuffledDeck();
   let hands = Cards.dealCards(2, deck);
 
-  let playerOne = {
-    hand: hands[0],
-    pile: []
-  };
-  let playerTwo = {
-    hand: hands[1],
-    pile: []
-  }
+  let playerOne = new Player(hands[0]);
+  let playerTwo = new Player(hands[1]);
 
-  while(playerOne.hand.length > 0 && playerTwo.hand.length > 0){
-    let playerOneCard = playerOne.hand.shift();
-    let playerTwoCard = playerTwo.hand.shift();
+  while(playerOne.hasCards() && playerTwo.hasCards()){
+    let playerOneCard = playerOne.getCard();
+    let playerTwoCard = playerTwo.getCard();
 
     if(playerOneCard.valueIndex > playerTwoCard.valueIndex) {
       playerOne.pile.push(playerOneCard, playerTwoCard);
     } else if (playerTwoCard.valueIndex > playerOneCard.valueIndex) {
       playerTwo.pile.push(playerOneCard, playerTwoCard);
+    } else { // tie
+      let winnerCards = [];
+
+      while(playerOneCard && playerTwoCard && playerOneCard.valueIndex === playerTwoCard.valueIndex ) {
+        winnerCards.push(playerOneCard, playerTwoCard);
+        winnerCards.push(playerOne.getCard(), playerTwo.getCard());
+        playerOneCard = playerOne.getCard();
+        playerTwoCard = playerTwo.getCard();
+      }
+
+      if(!playerOneCard) {
+        playerTwo.pile.push(...winnerCards); // win condition
+      } else if (!playerTwoCard) {
+        playerOne.pile.push(...winnerCards); // win condition
+      } else if (playerOneCard.valueIndex > playerTwoCard.valueIndex) {
+        playerOne.pile.push(...winnerCards);
+        playerOne.pile.push(playerOneCard, playerTwoCard);
+      } else if (playerTwoCard.valueIndex > playerOneCard.valueIndex) {
+        playerTwo.pile.push(...winnerCards);
+        playerTwo.pile.push(playerOneCard, playerTwoCard);
+      }
     }
 
-
-    shuffleIfHandIsEmpty(playerOne);
-    shuffleIfHandIsEmpty(playerTwo);
     numberOfTurns++;
-    console.log(`P1: h ${playerOne.hand.length} p ${playerOne.pile.length} P2: h ${playerTwo.hand.length} p ${playerTwo.pile.length}`);
   }
-  console.log(`The game took ${numberOfTurns} turns`);
   return numberOfTurns;
 }
 
-function shuffleIfHandIsEmpty(player) {
-  let {hand, pile} = player;
+const NUM_SAMPLES = 1000000;
+let totalTurns = 0;
 
-  if(hand.length === 0 && pile.length !== 0) {
-    player.hand = _.shuffle(pile);
-    player.pile = [];
-  }
+for(let i=0; i<NUM_SAMPLES; i++) {
+  let turns = playWar();
+  totalTurns += turns;
 }
 
-
-playWar();
+console.log(`Average # of Turns: ${Math.round(totalTurns/NUM_SAMPLES)}`);
