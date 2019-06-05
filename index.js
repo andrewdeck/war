@@ -1,7 +1,21 @@
 const _ = require('lodash');
+const ProgressBar = require('progress');
+
 const Cards = require('./cards.js');
 const Player = require('./player')
 
+const NUM_SAMPLES = 1000000;
+let totalTurns = 0;
+
+let bar = new ProgressBar('[:bar] :percent :elapseds', {total: NUM_SAMPLES});
+
+for(let i=0; i<NUM_SAMPLES; i++) {
+  let turns = playWar();
+  bar.tick();
+  totalTurns += turns;
+}
+
+console.log(`Average # of Turns: ${Math.round(totalTurns/NUM_SAMPLES)}`);
 
 function playWar() {
   let numberOfTurns = 0;
@@ -46,13 +60,3 @@ function playWar() {
   }
   return numberOfTurns;
 }
-
-const NUM_SAMPLES = 1000000;
-let totalTurns = 0;
-
-for(let i=0; i<NUM_SAMPLES; i++) {
-  let turns = playWar();
-  totalTurns += turns;
-}
-
-console.log(`Average # of Turns: ${Math.round(totalTurns/NUM_SAMPLES)}`);

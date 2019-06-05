@@ -10,6 +10,7 @@
   "author": "deck.andrew@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "progress": "^2.0.3"
   }
 }
